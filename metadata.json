@@ -1,0 +1,6 @@
+{
+  "name": "Sunbeam Laundry — Laundry Management System",
+  "description": "FIFO queue-driven laundry and dry-cleaning management system with customer directory, dynamic order billing, and printable invoices.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

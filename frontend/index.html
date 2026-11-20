@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Namma Laundry — Laundry Management System</title>
+  <meta name="description" content="Complete FIFO queue-driven laundry and dry-cleaning operations, customer management, and billing system." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar" role="banner">
+      <div class="topbar-inner">
+        <a href="#dashboard" class="brand-mark" id="brandHomeLink">Namma Laundry</a>
+
+        <nav class="primary-nav" aria-label="Main navigation">
+          <button type="button" class="nav-tab is-active" data-tab="dashboard">Dashboard</button>
+          <button type="button" class="nav-tab" data-tab="customers">Customers</button>
+          <button type="button" class="nav-tab" data-tab="new-order">New Order</button>
+          <button type="button" class="nav-tab" data-tab="queue">Queue</button>
+          <button type="button" class="nav-tab" data-tab="billing">Billing</button>
+        </nav>
+
+        <div class="topbar-actions">
+          <button type="button" class="btn btn-gold" id="quickNewOrderBtn">+ New Order</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content" id="mainContent">
+      <!-- 1. DASHBOARD VIEW -->
+      <section id="view-dashboard" class="view-section is-active" aria-labelledby="heading-dashboard">
+        <div class="section-header">
+          <div>
+            <h1 id="heading-dashboard" class="page-title">Operations Overview</h1>
+            <p class="page-subtitle" id="shopSubtitle">Namma Laundry &amp; Dry Care</p>
+          </div>
+          <div class="section-actions">
+            <button type="button" class="btn btn-outline" id="refreshDashboardBtn">Refresh</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid" id="dashboardKpis">
+          <article class="card kpi-card kpi-highlight">
+            <span class="kpi-label">Revenue Collected</span>
+            <strong class="kpi-value tabular-nums" id="kpiRevenue">—</strong>
+            <span class="kpi-meta" id="kpiPaidMeta">Settled invoices</span>
+          </article>
+          <article class="card kpi-card">
+            <span class="kpi-label">Unpaid Balance</span>
+            <strong class="kpi-value tabular-nums" id="kpiUnpaid">—</strong>
+            <span class="kpi-meta">Pending active collections</span>
+          </article>
+          <article class="card kpi-card">
+            <span class="kpi-label">Active in Pipeline</span>
+            <strong class="kpi-value tabular-nums" id="kpiActive">—</strong>
+            <span class="kpi-meta">Queued through ready for pickup</span>
+          </article>
+          <article class="card kpi-card">
+            <span class="kpi-label">Total Orders</span>
+            <strong class="kpi-value tabular-nums" id="kpiTotalOrders">—</strong>
+            <span class="kpi-meta">All recorded orders</span>
+          </article>
+        </div>
+
+        <div class="card status-strip-card">
+          <div class="card-header-row">
+            <h2 class="card-title">Stage Breakdown</h2>
+            <button type="button" class="btn-link" data-jump-tab="queue">Open Live Queue &rarr;</button>
+          </div>
+          <div class="status-counts-grid" id="statusCountsGrid"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header-row">
+            <h2 class="card-title">Recent Orders</h2>
+            <div class="filter-group">
+              <label for="dashboardStatusFilter" class="sr-only">Filter orders by status</label>
+              <select id="dashboardStatusFilter" class="input-select input-compact">
+                <option value="">All Statuses</option>
+                <option value="QUEUED">Queued</option>
+                <option value="WASHING">Washing</option>
+                <option value="IRONING">Ironing</option>
+                <option value="READY_FOR_PICKUP">Ready for Pickup</option>
+                <option value="DELIVERED">Delivered</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Customer</th>
+                  <th>Items</th>
+                  <th>Status</th>
+                  <th class="num-col">Total</th>
+                  <th>Payment</th>
+                  <th>Created</th>
+                  <th class="actions-col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardOrdersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. CUSTOMERS VIEW -->
+      <section id="view-customers" class="view-section" aria-labelledby="heading-customers">
+        <div class="section-header">
+          <div>
+            <h1 id="heading-customers" class="page-title">Customers</h1>
+            <p class="page-subtitle">Register customers, search records, and review order history.</p>
+          </div>
+        </div>
+
+        <div class="two-col-layout customers-layout">
+          <article class="card">
+            <h2 class="card-title">Register New Customer</h2>
+            <form id="customerForm" class="form-stack" novalidate>
+              <div class="form-field">
+                <label for="custName">Full Name <span class="required-mark">*</span></label>
+                <input type="text" id="custName" name="name" maxlength="120" required placeholder="e.g. Lakshmi Narayanan" />
+              </div>
+              <div class="form-field">
+                <label for="custPhone">Phone Number <span class="required-mark">*</span></label>
+                <input type="tel" id="custPhone" name="phone" maxlength="20" required placeholder="10-digit mobile number" />
+              </div>
+              <div class="form-field">
+                <label for="custEmail">Email Address</label>
+                <input type="email" id="custEmail" name="email" maxlength="150" placeholder="name@example.com" />
+              </div>
+              <div class="form-field">
+                <label for="custAddress">Pickup / Delivery Address</label>
+                <textarea id="custAddress" name="address" rows="2" maxlength="300" placeholder="Street, neighbourhood, city"></textarea>
+              </div>
+              <div class="form-error" id="customerFormError" role="alert" hidden></div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="saveCustomerBtn">Register Customer</button>
+                <button type="reset" class="btn btn-outline" id="resetCustomerBtn">Clear</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="card">
+            <div class="card-header-row wrap-row">
+              <h2 class="card-title">Customer Directory</h2>
+              <form id="customerSearchForm" class="search-bar">
+                <label for="customerSearchInput" class="sr-only">Search by name, phone, or ID</label>
+                <input type="search" id="customerSearchInput" placeholder="Search name, phone, or ID..." />
+                <button type="submit" class="btn btn-outline btn-sm">Search</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="clearCustomerSearchBtn">Reset</button>
+                <button type="button" class="btn btn-gold btn-sm" id="exportCustomersCsvBtn">Export CSV</button>
+              </form>
+            </div>
+
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th class="actions-col">History</th>
+                  </tr>
+                </thead>
+                <tbody id="customersTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+
+        <article class="card history-panel" id="customerHistoryPanel" hidden>
+          <div class="card-header-row">
+            <div>
+              <h2 class="card-title" id="historyPanelTitle">Order History</h2>
+              <p class="page-subtitle" id="historyPanelSubtitle"></p>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" id="closeHistoryBtn">Close</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Status</th>
+                  <th>Items</th>
+                  <th class="num-col">Total</th>
+                  <th>Payment</th>
+                  <th>Placed On</th>
+                  <th class="actions-col">Invoice</th>
+                </tr>
+              </thead>
+              <tbody id="customerHistoryBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- 3. NEW ORDER VIEW -->
+      <section id="view-new-order" class="view-section" aria-labelledby="heading-new-order">
+        <div class="section-header">
+          <div>
+            <h1 id="heading-new-order" class="page-title">Create New Order</h1>
+            <p class="page-subtitle">Add garments, calculate live pricing, and enqueue for processing.</p>
+          </div>
+        </div>
+
+        <form id="newOrderForm" class="two-col-layout order-layout" novalidate>
+          <div class="order-main-col">
+            <article class="card">
+              <div class="card-header-row">
+                <h2 class="card-title">Customer &amp; Notes</h2>
+                <button type="button" class="btn-link" data-jump-tab="customers">+ Register Customer</button>
+              </div>
+              <div class="form-grid-2">
+                <div class="form-field">
+                  <label for="orderCustomerSelect">Customer <span class="required-mark">*</span></label>
+                  <select id="orderCustomerSelect" required></select>
+                </div>
+                <div class="form-field">
+                  <label for="orderDiscount">Discount (<span class="currency-label">₹</span>)</label>
+                  <input type="number" id="orderDiscount" min="0" step="0.01" value="0.00" />
+                </div>
+              </div>
+              <div class="form-field">
+                <label for="orderNotes">Order Notes</label>
+                <input type="text" id="orderNotes" maxlength="500" placeholder="e.g. Gentle wash, separate whites, call before delivery" />
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-header-row">
+                <h2 class="card-title">Garment Line Items</h2>
+                <button type="button" class="btn btn-gold btn-sm" id="addOrderItemRowBtn">+ Add Garment Row</button>
+              </div>
+
+              <div class="order-items-list" id="orderItemsContainer"></div>
+            </article>
+          </div>
+
+          <aside class="order-summary-col">
+            <article class="card summary-card">
+              <h2 class="card-title">Order Summary</h2>
+              <div class="summary-rows">
+                <div class="summary-row">
+                  <span>Garments</span>
+                  <strong class="tabular-nums" id="summaryItemCount">0</strong>
+                </div>
+                <div class="summary-row">
+                  <span>Subtotal</span>
+                  <strong class="tabular-nums" id="summarySubtotal">₹0.00</strong>
+                </div>
+                <div class="summary-row">
+                  <span>Tax (<span id="summaryTaxRate">18</span>%)</span>
+                  <strong class="tabular-nums" id="summaryTax">₹0.00</strong>
+                </div>
+                <div class="summary-row">
+                  <span>Discount</span>
+                  <strong class="tabular-nums" id="summaryDiscount">-₹0.00</strong>
+                </div>
+                <div class="summary-divider"></div>
+                <div class="summary-row summary-total">
+                  <span>Estimated Total</span>
+                  <strong class="tabular-nums" id="summaryTotal">₹0.00</strong>
+                </div>
+              </div>
+              <div class="form-error" id="orderFormError" role="alert" hidden></div>
+              <button type="submit" class="btn btn-primary btn-full" id="submitOrderBtn">Submit &amp; Enqueue Order</button>
+              <p class="helper-note">Submitting creates an invoice automatically and places the order at the back of the Queued stage.</p>
+            </article>
+
+            <article class="card tariff-card">
+              <h3 class="card-subtitle">Tariff Reference</h3>
+              <div class="tariff-mini-wrap" id="tariffReferenceBody"></div>
+            </article>
+          </aside>
+        </form>
+      </section>
+
+      <!-- 4. QUEUE VIEW -->
+      <section id="view-queue" class="view-section" aria-labelledby="heading-queue">
+        <div class="section-header">
+          <div>
+            <h1 id="heading-queue" class="page-title">Processing Queue</h1>
+          </div>
+          <div class="section-actions">
+            <label class="toggle-control">
+              <input type="checkbox" id="queueAutoRefreshToggle" checked />
+              <span>Auto-refresh (10s)</span>
+            </label>
+            <button type="button" class="btn btn-outline" id="refreshQueueBtn">Refresh Now</button>
+            <button type="button" class="btn btn-gold" id="processNextBtn">Process Next Order</button>
+          </div>
+        </div>
+
+        <div class="unpaid-banner" id="queueUnpaidWarning" role="status" hidden>
+          <div class="unpaid-banner-text" id="queueUnpaidWarningText"></div>
+          <div class="unpaid-banner-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="queueWarningCollectBtn">Open Invoice</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="dismissWarningBtn">Dismiss</button>
+          </div>
+        </div>
+
+        <div class="pipeline-board" id="pipelineBoard">
+          <div class="pipeline-column" data-stage="QUEUED">
+            <div class="column-header stage-queued">
+              <h2>Queued</h2>
+              <span class="column-count tabular-nums" id="count-QUEUED">0</span>
+            </div>
+            <div class="column-cards" id="col-QUEUED"></div>
+          </div>
+
+          <div class="pipeline-column" data-stage="WASHING">
+            <div class="column-header stage-washing">
+              <h2>Washing</h2>
+              <span class="column-count tabular-nums" id="count-WASHING">0</span>
+            </div>
+            <div class="column-cards" id="col-WASHING"></div>
+          </div>
+
+          <div class="pipeline-column" data-stage="IRONING">
+            <div class="column-header stage-ironing">
+              <h2>Ironing</h2>
+              <span class="column-count tabular-nums" id="count-IRONING">0</span>
+            </div>
+            <div class="column-cards" id="col-IRONING"></div>
+          </div>
+
+          <div class="pipeline-column" data-stage="READY_FOR_PICKUP">
+            <div class="column-header stage-ready">
+              <h2>Ready for Pickup</h2>
+              <span class="column-count tabular-nums" id="count-READY_FOR_PICKUP">0</span>
+            </div>
+            <div class="column-cards" id="col-READY_FOR_PICKUP"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. BILLING VIEW -->
+      <section id="view-billing" class="view-section" aria-labelledby="heading-billing">
+        <div class="section-header no-print">
+          <div>
+            <h1 id="heading-billing" class="page-title">Billing &amp; Invoices</h1>
+            <p class="page-subtitle">Inspect itemized invoices, record payments, and print customer receipts.</p>
+          </div>
+        </div>
+
+        <div class="two-col-layout billing-layout">
+          <aside class="card no-print billing-sidebar">
+            <h2 class="card-title">Find Invoice</h2>
+            <form id="invoiceLookupForm" class="search-bar">
+              <label for="invoiceOrderIdInput" class="sr-only">Order ID</label>
+              <input type="number" id="invoiceOrderIdInput" min="1" placeholder="Enter Order ID..." required />
+              <button type="submit" class="btn btn-primary btn-sm">Load</button>
+            </form>
+
+            <h3 class="card-subtitle">Recent Invoices</h3>
+            <div class="invoice-list" id="billingOrderList"></div>
+          </aside>
+
+          <div class="invoice-stage">
+            <div class="card empty-invoice-card no-print" id="invoiceEmptyState">
+              <p>Select an order from the list or enter an Order ID to display its itemized invoice.</p>
+            </div>
+
+            <article class="card invoice-sheet" id="invoiceSheet" hidden>
+              <div class="invoice-header">
+                <div>
+                  <h2 class="invoice-shop-name" id="invShopName">Namma Laundry &amp; Dry Care</h2>
+                  <p class="invoice-shop-address" id="invShopAddress">—</p>
+                </div>
+                <div class="invoice-meta-right">
+                  <div class="invoice-number tabular-nums" id="invNumber">INV-0000</div>
+                  <div class="invoice-date" id="invDate">—</div>
+                  <div id="invPaymentBadgeWrap"></div>
+                </div>
+              </div>
+
+              <div class="invoice-parties">
+                <div>
+                  <span class="meta-label">Billed To</span>
+                  <strong id="invCustomerName">—</strong>
+                  <div id="invCustomerPhone" class="tabular-nums">—</div>
+                  <div id="invCustomerAddress" class="muted-text">—</div>
+                </div>
+                <div class="invoice-order-info">
+                  <span class="meta-label">Order Details</span>
+                  <div>Order <strong class="tabular-nums" id="invOrderId">#—</strong></div>
+                  <div>Stage: <span id="invOrderStatus">—</span></div>
+                  <div id="invPaidMeta" class="muted-text"></div>
+                </div>
+              </div>
+
+              <div class="table-wrap">
+                <table class="data-table invoice-table">
+                  <thead>
+                    <tr>
+                      <th>Garment</th>
+                      <th>Service</th>
+                      <th>Notes</th>
+                      <th class="num-col">Qty</th>
+                      <th class="num-col">Unit Price</th>
+                      <th class="num-col">Line Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invItemsBody"></tbody>
+                </table>
+              </div>
+
+              <div class="invoice-totals">
+                <div class="summary-rows">
+                  <div class="summary-row">
+                    <span>Subtotal</span>
+                    <strong class="tabular-nums" id="invSubtotal">—</strong>
+                  </div>
+                  <div class="summary-row">
+                    <span>Tax (<span id="invTaxRate">18</span>%)</span>
+                    <strong class="tabular-nums" id="invTaxAmount">—</strong>
+                  </div>
+                  <div class="summary-row">
+                    <span>Discount</span>
+                    <strong class="tabular-nums" id="invDiscount">—</strong>
+                  </div>
+                  <div class="summary-divider"></div>
+                  <div class="summary-row summary-total">
+                    <span>Total Amount</span>
+                    <strong class="tabular-nums" id="invTotalAmount">—</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="invoice-footer-note">
+                Thank you for choosing Namma Laundry &amp; Dry Care.
+              </div>
+
+              <div class="invoice-actions no-print">
+                <div class="pay-controls" id="payControlsGroup">
+                  <label for="paymentMethodSelect" class="sr-only">Payment Method</label>
+                  <select id="paymentMethodSelect" class="input-select">
+                    <option value="UPI">UPI</option>
+                    <option value="CASH">Cash</option>
+                    <option value="CARD">Card</option>
+                  </select>
+                  <button type="button" class="btn btn-gold" id="markPaidBtn">Mark as Paid</button>
+                </div>
+                <button type="button" class="btn btn-primary" id="printInvoiceBtn">Print Invoice</button>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Confirmation Dialog for Order Cancellation -->
+  <dialog id="confirmCancelDialog" class="confirm-dialog">
+    <div class="dialog-body">
+      <h2 class="card-title">Cancel Order</h2>
+      <p id="confirmCancelMessage">Are you sure you want to cancel this order? It will be removed from the active queue.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-outline" id="cancelDialogCloseBtn">Keep Order</button>
+        <button type="button" class="btn btn-danger" id="cancelDialogConfirmBtn">Cancel Order</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/customers.js"></script>
+  <script src="js/orders.js"></script>
+  <script src="js/queue.js"></script>
+  <script src="js/billing.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
