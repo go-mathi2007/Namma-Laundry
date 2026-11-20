@@ -4,24 +4,35 @@
   const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 
   function resolveApiBaseUrl() {
-    if (typeof global.API_BASE_URL === 'string') {
-      return global.API_BASE_URL;
-    }
-    if (typeof window !== 'undefined' && window.location) {
-      const { protocol, hostname, port } = window.location;
-      if (protocol === 'file:') {
-        return DEFAULT_API_BASE_URL;
-      }
-      if ((hostname === 'localhost' || hostname === '127.0.0.1') && port === '8080') {
-        return DEFAULT_API_BASE_URL;
-      }
-      if (port === '3000' || hostname.endsWith('.run.app')) {
-        return '';
-      }
-    }
-    return DEFAULT_API_BASE_URL;
+  if (typeof global.API_BASE_URL === 'string') {
+    return global.API_BASE_URL;
   }
 
+  if (typeof window !== 'undefined' && window.location) {
+    const { protocol, hostname, port } = window.location;
+
+    if (protocol === 'file:') {
+      return DEFAULT_API_BASE_URL;
+    }
+
+    if (
+      (hostname === 'localhost' || hostname === '127.0.0.1') &&
+      port === '8080'
+    ) {
+      return DEFAULT_API_BASE_URL;
+    }
+
+    if (port === '3000' || hostname.endsWith('.run.app')) {
+      return '';
+    }
+
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return '';
+    }
+  }
+
+  return DEFAULT_API_BASE_URL;
+}
   const API_BASE_URL = resolveApiBaseUrl();
 
   function escapeHtml(value) {
