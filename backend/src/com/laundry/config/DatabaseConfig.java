@@ -3,7 +3,7 @@ package com.laundry.config;
 /**
  * Central database and server configuration.
  * Values can be overridden via environment variables:
- * DB_URL, DB_USER, DB_PASS, DB_POOL_SIZE, SERVER_PORT, FRONTEND_DIR.
+ * DB_URL, DB_USER, DB_PASS, DB_POOL_SIZE, PORT, SERVER_PORT, FRONTEND_DIR.
  */
 public final class DatabaseConfig {
 
@@ -45,7 +45,10 @@ public final class DatabaseConfig {
     }
 
     public static int getServerPort() {
-        String raw = System.getenv("SERVER_PORT");
+        String raw = System.getenv("PORT");
+        if (raw == null || raw.isBlank()) {
+            raw = System.getenv("SERVER_PORT");
+        }
         if (raw == null || raw.isBlank()) {
             return DEFAULT_SERVER_PORT;
         }
@@ -56,7 +59,6 @@ public final class DatabaseConfig {
             return DEFAULT_SERVER_PORT;
         }
     }
-
     public static String getFrontendDir() {
         return getEnvOrDefault("FRONTEND_DIR", DEFAULT_FRONTEND_DIR);
     }
