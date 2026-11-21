@@ -1190,3 +1190,45 @@ textarea {
     padding: 0;
   }
 }
+/* Namma Laundry Logo */
+.brand-logo {
+  display: block;
+  width: 340px;
+  height: 85px;
+  max-height: 85px;
+  object-fit: contain;
+}
+
+@media (max-width: 600px) {
+  .brand-logo {
+    width: 260px;
+    height: 65px;
+    max-height: 65px;
+  }
+}
+/* Align Namma Laundry Logo to the Left */
+.topbar-inner {
+  justify-content: flex-start;
+}
+
+.brand-mark {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.brand-logo {
+  display: block;
+  width: 340px;
+  height: 85px;
+  max-height: 85px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+@media (max-width: 600px) {
+  .brand-logo {
+    width: 260px;
+    height: 65px;
+    max-height: 65px;
+  }
+}
